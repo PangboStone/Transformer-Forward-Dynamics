@@ -19,7 +19,7 @@ class PCESNpp:
 
     def __init__(self, input_size, reservoir_size, output_size,
                  spectral_radius=0.99, sparsity=0.1, leak_rate=0.1,
-                 regularization_factor=1e-3, ghl_learning_rate=1e-3):
+                 regularization_factor=1e-3, ghl_learning_rate=1e-3,ghl_decay_steps=5000.0):
         """
         初始化 PC-ESN++ 模型。
 
@@ -35,6 +35,7 @@ class PCESNpp:
         self.leak_rate = leak_rate
         self.regularization_factor = regularization_factor
         self.ghl_initial_learning_rate = ghl_learning_rate
+        self.ghl_decay_steps = ghl_decay_steps
 
         print("--- 初始化 PC-ESN++ 模型 ---")
 
@@ -82,7 +83,7 @@ class PCESNpp:
         # 2. 更新GHL权重 (论文公式 2)
         # η_t (eta_t) 是一个随时间衰减的学习率
         self.t_counter += 1
-        eta_t = self.ghl_initial_learning_rate / (1 + self.t_counter / 1000)
+        eta_t = self.ghl_initial_learning_rate / (1 + self.t_counter / self.ghl_decay_steps)
 
         # 计算权重更新量 ΔW
         h_h_T = cp.dot(h_t, h_t.T)
@@ -149,48 +150,3 @@ class PCESNpp:
         # 3. 进行预测
         prediction_gpu = cp.dot(self.W_out, c_t)
         return cp.asnumpy(prediction_gpu)
-
-
-# 测试代码
-# if __name__ == '__main__':
-#     # 定义模型参数
-#     INPUT_SIZE = 21
-#     RESERVOIR_SIZE = 500
-#     OUTPUT_SIZE = 14
-#
-#     # 创建模型实例
-#     pcesn_model = PCESNpp(input_size=INPUT_SIZE,
-#                           reservoir_size=RESERVOIR_SIZE,
-#                           output_size=OUTPUT_SIZE)
-#
-#     # 创建一个模拟的单步输入和目标
-#     sample_input = np.random.rand(INPUT_SIZE, 1)
-#     sample_target = np.random.rand(OUTPUT_SIZE, 1)
-#
-#     # 1. 预测一次 (在训练前)
-#     print("\n--- 训练前 ---")
-#     prediction_before = pcesn_model.predict(sample_input)
-#     error_before = np.mean((sample_target - prediction_before) ** 2)
-#     print(f"预测输出的形状: {prediction_before.shape}")
-#     print(f"预测误差 (MSE): {error_before:.6f}")
-#
-#     # 2. 训练一步
-#     print("\n--- 执行一步训练 ---")
-#     pcesn_model.train_step(sample_input, sample_target)
-#     print("模型权重已更新。")
-#
-#     # 3. 再次预测 (在训练后)
-#     print("\n--- 训练后 ---")
-#     # 注意：为了得到可比较的结果，我们重新生成了存储库状态
-#     # 在实际应用中，状态是连续的
-#     pcesn_model.r_state = cp.zeros((RESERVOIR_SIZE, 1))  # 重置状态
-#     prediction_after = pcesn_model.predict(sample_input)
-#     error_after = cp.mean((sample_target - prediction_after) ** 2)
-#     print(f"预测输出的形状: {prediction_after.shape}")
-#     print(f"预测误差 (MSE): {error_after:.6f}")
-#
-#     # 检查误差是否减小
-#     if error_after < error_before:
-#         print("\n成功: 经过一步训练后，预测误差减小了！")
-#     else:
-#         print("\n注意: 经过一步训练后，预测误差没有减小。这在单步中是可能发生的。")

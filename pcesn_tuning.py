@@ -19,11 +19,11 @@ from model_pcesn import PCESNpp
 #     'GHL_LEARNING_RATE': [1e-3]  # 暂时固定GHL学习率
 # }
 
-# 第二轮参数网格搜索
+# Grid Search on Parameter space
 HYPERPARAM_SEARCH_SPACE = {
-    'RESERVOIR_SIZE': [210], # 测试不同容量的模型
-    'LEAK_RATE': [0.5],       # 围绕上次找到的最佳值0.5进行精细搜索
-    'SPECTRAL_RADIUS': [0.9], # 围绕上次找到的最佳值0.9进行精细搜索
+    'RESERVOIR_SIZE': [400],    # 测试不同容量的模型
+    'LEAK_RATE': [0.3],         # 围绕上次找到的最佳值0.5进行精细搜索
+    'SPECTRAL_RADIUS': [0.7],   # 围绕上次找到的最佳值0.9进行精细搜索
     'REGULARIZATION_FACTOR': [0.0001],  # 固定上次找到的最佳值
     'GHL_LEARNING_RATE': [0.001]        # 固定上次找到的最佳值
 }
@@ -82,16 +82,16 @@ def run_single_experiment(params, all_trajectories):
 # --- 3. 主调优流程 ---
 if __name__ == '__main__':
     # --- 初始化日志 ---
-    log_dir = "venv/tuning_logs"
-    os.makedirs(log_dir, exist_ok=True)
-    current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    log_file_path = os.path.join(log_dir, f'pcesn_tuning_{current_time}.log')
+    # log_dir = "venv/tuning_logs"
+    # os.makedirs(log_dir, exist_ok=True)
+    # current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    # log_file_path = os.path.join(log_dir, f'pcesn_tuning_{current_time}.log')
 
-    with open(log_file_path, 'w') as log_file:
+    # with open(log_file_path, 'w') as log_file:
         def log_print(message):
             print(message)
-            log_file.write(message + '\n')
-            log_file.flush()
+            # log_file.write(message + '\n')
+            # log_file.flush()
 
 
         log_print("--- PC-ESN++ 超参数网格搜索 ---")
@@ -136,5 +136,14 @@ if __name__ == '__main__':
         log_print(f"最佳单步预测 nMSE: {best_nmse:.6f}")
         log_print(f"对应的最佳超参数组合: {best_params}")
 
-    print(f"\n调优完成！详细日志已保存至: {log_file_path}")
+    # print(f"\n调优完成！详细日志已保存至: {log_file_path}")
 
+
+# ==================== 搜索完成 ====================
+# 总耗时: 13.67 分钟
+# 最佳单步预测 nMSE: 0.188193
+# 对应的最佳超参数组合: {'RESERVOIR_SIZE': 400,
+#              'LEAK_RATE': 0.3,
+#              'SPECTRAL_RADIUS': 0.7,
+#              'REGULARIZATION_FACTOR': 0.0001,
+#              'GHL_LEARNING_RATE': 0.001}

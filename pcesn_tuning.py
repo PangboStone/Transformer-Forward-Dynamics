@@ -2,43 +2,43 @@ import numpy as np
 import os
 from datetime import datetime
 from sklearn.preprocessing import StandardScaler
-import itertools
 import time
+import csv
+from skopt import gp_minimize
+from skopt.space import Real, Integer, Categorical
+from skopt.utils import use_named_args
 
-# --- 从自定义模块导入 ---
 from dataset import load_all_trajectories_from_file
 from model_pcesn import PCESNpp
 
-# --- 1. 定义超参数搜索空间 ---
-# 在这里定义我们想要测试的每一组超参数的值
-# HYPERPARAM_SEARCH_SPACE = {
-#     'RESERVOIR_SIZE': [300],  # 暂时固定储备池大小以加快搜索速度
-#     'LEAK_RATE': [0.1, 0.3, 0.5, 0.8],
-#     'SPECTRAL_RADIUS': [0.9, 0.99, 1.1],
-#     'REGULARIZATION_FACTOR': [1e-2, 1e-4, 1e-6],
-#     'GHL_LEARNING_RATE': [1e-3]  # 暂时固定GHL学习率
-# }
+# --- 1. 定义超参数的搜索空间 (使用skopt的维度对象) ---
+# 这比网格搜索的字典更灵活
+search_space = [
+    Integer(200, 800, name='reservoir_size'),
+    Real(0.1, 1.0, prior='uniform', name='spectral_radius'),
+    Real(0.1, 1.0, prior='uniform', name='leak_rate'),
+    Categorical([1e-2, 1e-3, 1e-4, 1e-5, 1e-6], name='regularization_factor'),
+    Real(1e-4, 1e-2, prior='log-uniform', name='ghl_learning_rate'),
+    Integer(1000, 10000, name='ghl_decay_steps')
+]
+# 将维度名称提取出来，方便后续使用
+search_space_names = [dim.name for dim in search_space]
 
-# Grid Search on Parameter space
-HYPERPARAM_SEARCH_SPACE = {
-    'RESERVOIR_SIZE': [400],    # 测试不同容量的模型
-    'LEAK_RATE': [0.3],         # 围绕上次找到的最佳值0.5进行精细搜索
-    'SPECTRAL_RADIUS': [0.7],   # 围绕上次找到的最佳值0.9进行精细搜索
-    'REGULARIZATION_FACTOR': [0.0001],  # 固定上次找到的最佳值
-    'GHL_LEARNING_RATE': [0.001]        # 固定上次找到的最佳值
-}
 
-# --- 2. 训练与评估的核心函数 ---
-# 我们将核心逻辑封装成一个函数，便于循环调用
-def run_single_experiment(params, all_trajectories):
+# --- 2. 定义目标函数 ---
+# 这是贝叶斯优化器需要最小化的函数
+# 它接收一组超参数，返回一个性能分数（nMSE）
+@use_named_args(search_space)
+def objective_function(**params):
     """
-    使用一组给定的超参数，运行一轮交叉验证并返回结果。
+    接收一组超参数，运行一次精简实验，并返回单步预测nMSE。
     """
+    print(f"\n--- 正在测试参数组合: {params} ---")
+
     try:
         # 使用第0折作为快速测试
-        fold_index = 0
-        test_trajectory = all_trajectories[fold_index]
-        train_trajectories = all_trajectories[1:]  # 使用剩余的轨迹
+        test_trajectory = all_trajectories[0]
+        train_trajectories = all_trajectories[1:]
 
         # 数据标准化
         combined_train_inputs = np.concatenate([traj['inputs'] for traj in train_trajectories], axis=0)
@@ -50,13 +50,13 @@ def run_single_experiment(params, all_trajectories):
 
         # 初始化模型
         model = PCESNpp(
-            input_size=21,
-            output_size=14,
-            reservoir_size=params['RESERVOIR_SIZE'],
-            spectral_radius=params['SPECTRAL_RADIUS'],
-            leak_rate=params['LEAK_RATE'],
-            regularization_factor=params['REGULARIZATION_FACTOR'],
-            ghl_learning_rate=params['GHL_LEARNING_RATE']
+            input_size=21, output_size=14,
+            reservoir_size=params['reservoir_size'],
+            spectral_radius=params['spectral_radius'],
+            leak_rate=params['leak_rate'],
+            regularization_factor=params['regularization_factor'],
+            ghl_learning_rate=params['ghl_learning_rate'],
+            ghl_decay_steps=params['ghl_decay_steps']
         )
 
         # 训练
@@ -66,84 +66,75 @@ def run_single_experiment(params, all_trajectories):
 
         # 评估 (只评估单步预测以加快速度)
         model.r_state.fill(0)
-        predictions_sbs = []
-        for t in range(len(scaled_test_inputs)):
-            pred = model.predict(scaled_test_inputs[t].reshape(-1, 1))
-            predictions_sbs.append(pred.flatten())
+        predictions_sbs = np.array([model.predict(u_t.reshape(-1, 1)).flatten() for u_t in scaled_test_inputs])
 
-        nmse_sbs = np.mean((np.array(predictions_sbs) - test_targets) ** 2) / np.var(test_targets)
-        return nmse_sbs, params
+        # 计算nMSE
+        mse = np.mean((predictions_sbs - test_targets) ** 2)
+        var_targets = np.var(test_targets)
+        nmse = mse / (var_targets + 1e-9)
+
+        print(f"结果 -> 单步预测 nMSE: {nmse:.6f}")
+        return nmse
 
     except Exception as e:
-        print(f"参数组合 {params} 运行时出错: {e}")
-        return float('inf'), params  # 返回一个极大值表示失败
+        print(f"参数组合运行时出错: {e}")
+        return 50.0  # 返回一个很大的惩罚值
 
 
 # --- 3. 主调优流程 ---
 if __name__ == '__main__':
-    # --- 初始化日志 ---
-    # log_dir = "venv/tuning_logs"
-    # os.makedirs(log_dir, exist_ok=True)
-    # current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    # log_file_path = os.path.join(log_dir, f'pcesn_tuning_{current_time}.log')
+    # 加载一次数据，供所有实验使用
+    DATA_FILE_PATH = 'venv/ForwardDynamics/BaxterDirectDynamics.mat'
+    all_trajectories = load_all_trajectories_from_file(DATA_FILE_PATH)
 
-    # with open(log_file_path, 'w') as log_file:
-        def log_print(message):
-            print(message)
-            # log_file.write(message + '\n')
-            # log_file.flush()
+    print("--- Starting Bayesian hyperparameter optimisation ---")
+    start_time = time.time()
 
+    # --- CSV日志记录设置 ---
+    log_dir = "tuning_logs"
+    os.makedirs(log_dir, exist_ok=True)
+    current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    csv_log_path = os.path.join(log_dir, f'pcesn_bayesian_tuning_results_{current_time}.csv')
 
-        log_print("--- PC-ESN++ 超参数网格搜索 ---")
-        log_print(f"搜索空间: {HYPERPARAM_SEARCH_SPACE}")
+    print(f"详细调优结果将保存至: {csv_log_path}")
 
-        # 加载数据
-        DATA_FILE_PATH = 'venv/ForwardDynamics/BaxterDirectDynamics.mat'
-        all_trajectories = load_all_trajectories_from_file(DATA_FILE_PATH)
-
-        # 从搜索空间中生成所有可能的参数组合
-        keys, values = zip(*HYPERPARAM_SEARCH_SPACE.items())
-        param_combinations = [dict(zip(keys, v)) for v in itertools.product(*values)]
-
-        log_print(f"\n将要测试 {len(param_combinations)} 组超参数组合...")
-
-        results = []
-        best_nmse = float('inf')
-        best_params = None
-
-        start_time = time.time()
-        for i, params in enumerate(param_combinations):
-            iter_start_time = time.time()
-            log_print(f"\n--- 正在测试第 {i + 1}/{len(param_combinations)} 组 ---")
-            log_print(f"参数: {params}")
-
-            # 运行实验
-            nmse, _ = run_single_experiment(params, all_trajectories)
-            results.append((nmse, params))
-
-            iter_end_time = time.time()
-            log_print(f"结果 -> 单步预测 nMSE: {nmse:.6f} (耗时: {iter_end_time - iter_start_time:.2f} 秒)")
-
-            # 记录最佳结果
-            if nmse < best_nmse:
-                best_nmse = nmse
-                best_params = params
-                log_print("!!! 发现了新的最佳参数 !!!")
-
-        end_time = time.time()
-        log_print("\n\n" + "=" * 20 + " 搜索完成 " + "=" * 20)
-        log_print(f"总耗时: {(end_time - start_time) / 60:.2f} 分钟")
-        log_print(f"最佳单步预测 nMSE: {best_nmse:.6f}")
-        log_print(f"对应的最佳超参数组合: {best_params}")
-
-    # print(f"\n调优完成！详细日志已保存至: {log_file_path}")
+    # 打开CSV文件并写入表头
+    with open(csv_log_path, 'w', newline='') as f:
+        writer = csv.writer(f)
+        header = search_space_names + ['nMSE']
+        writer.writerow(header)
 
 
-# ==================== 搜索完成 ====================
-# 总耗时: 13.67 分钟
-# 最佳单步预测 nMSE: 0.188193
-# 对应的最佳超参数组合: {'RESERVOIR_SIZE': 400,
-#              'LEAK_RATE': 0.3,
-#              'SPECTRAL_RADIUS': 0.7,
-#              'REGULARIZATION_FACTOR': 0.0001,
-#              'GHL_LEARNING_RATE': 0.001}
+        # 定义一个回调函数，在每次迭代后被调用
+        def on_step(res):
+            # res.x_iters[-1] 是最新测试的参数列表
+            # res.func_vals[-1] 是最新得到的分数 (nMSE)
+            latest_params = res.x_iters[-1]
+            latest_nmse = res.func_vals[-1]
+
+            # 将参数和结果写入CSV文件
+            row = latest_params + [latest_nmse]
+            writer.writerow(row)
+            print("Results of current round have been recorded.")
+
+
+        # 运行贝叶斯优化，并传入回调函数
+        result = gp_minimize(
+            func=objective_function,
+            dimensions=search_space,
+            n_calls=50,  # 建议尝试 30-50 次
+            random_state=42,
+            callback=[on_step],  # 传入回调函数
+            verbose=True
+        )
+
+    end_time = time.time()
+    print("\n\n" + "=" * 20 + " Bayesian optimisation complete " + "=" * 20)
+    print(f"Total time consumption: {(end_time - start_time) / 60:.2f} 分钟")
+    print(f"Best single-step prediction found nMSE: {result.fun:.6f}")
+
+    best_parameters = dict(zip(search_space_names, result.x))
+    print("Corresponding optimal hyperparameter set:")
+    for param, value in best_parameters.items():
+        print(f"  {param}: {value}")
+

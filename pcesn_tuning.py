@@ -138,3 +138,13 @@ if __name__ == '__main__':
     for param, value in best_parameters.items():
         print(f"  {param}: {value}")
 
+# ==================== Bayesian optimisation complete ====================
+# Total time consumption: 53.35 分钟
+# Best single-step prediction found nMSE: 0.041407
+# Corresponding optimal hyperparameter set:
+#   reservoir_size: 200
+#   spectral_radius: 1.0
+#   leak_rate: 0.8523574083444535
+#   regularization_factor: 0.01
+#   ghl_learning_rate: 0.009860074729183677
+#   ghl_decay_steps: 10000

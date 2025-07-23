@@ -102,7 +102,7 @@ class RobotDynamicsDataset(Dataset):
     这个类负责将轨迹数据转换为(序列, 目标)的样本对。
     """
 
-    def __init__(self, trajectories, sequence_length, scaler):
+    def __init__(self, trajectories, sequence_length, input_scaler, output_scaler):
         """
         初始化数据集。
 
@@ -111,17 +111,17 @@ class RobotDynamicsDataset(Dataset):
                              每个字典包含 'inputs' 和 'targets'。
         sequence_length (int): 输入序列的窗口长度。
         scaler (sklearn.preprocessing.StandardScaler): 用于标准化输入数据的scaler对象。
+        output_scaler (sklearn.preprocessing.StandardScaler): 用于标准化目标数据的scaler。
+        输入和输出的scalar 不一样， 输入数据是21维（速度，位置，力矩），输出数据是14维（速度，位置），输入和输出的统计特性是不同的
         """
         super().__init__()
         self.sequence_length = sequence_length
         self.trajectories = trajectories
-        self.scaler = scaler
 
         # --- 数据处理核心逻辑 ---
         # 1. 对所有轨迹的输入数据进行标准化
-        self.scaled_inputs = [self.scaler.transform(traj['inputs']) for traj in self.trajectories]
-        # 注意：目标数据通常不需要标准化，因为我们希望模型直接预测原始值。
-        self.targets = [traj['targets'] for traj in self.trajectories]
+        self.scaled_inputs = [input_scaler.transform(traj['inputs']) for traj in trajectories]
+        self.scaled_targets = [output_scaler.transform(traj['targets']) for traj in trajectories]
 
         # 2. 创建一个索引映射，方便__getitem__快速查找
         # 这个列表将存储每个样本的 (轨迹索引, 在该轨迹中的起始位置)
@@ -149,7 +149,7 @@ class RobotDynamicsDataset(Dataset):
         input_sequence = self.scaled_inputs[traj_idx][start_idx:end_idx]
 
         # 3. 目标值对应的是输入序列结束时的那个时间步的目标
-        target = self.targets[traj_idx][end_idx - 1]
+        target = self.scaled_targets[traj_idx][end_idx - 1]
 
         # 4. 将Numpy数组转换为PyTorch张量
         return torch.from_numpy(input_sequence), torch.from_numpy(target)

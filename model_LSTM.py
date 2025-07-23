@@ -51,6 +51,7 @@ class LSTMBaseline(nn.Module):
         return prediction
 
 
+
 class PositionalEncoding(nn.Module):
     """
     为序列注入位置信息。这是 Transformer 模型正确处理序列顺序所必需的。

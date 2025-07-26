@@ -74,7 +74,7 @@ class LinformerAttention(nn.Module):
         k_proj = self.e_proj(k)
 
         v = v.permute(0, 1, 3, 2).reshape(batch_size * self.nhead, self.d_head, self.seq_len)
-        v_proj = self.e_proj(v)
+        v_proj = self.f_proj(v)
 
         # Reshape back for attention calculation
         # k_proj: (batch_size, nhead, d_head, k) -> (batch_size, nhead, k, d_head)
@@ -141,7 +141,7 @@ class LinformerEncoderLayer(nn.Module):
         return src
 
 # Module 4 Transformer with Lineformer
-class LineformerTransformerModel(nn.Module):
+class LinformerTransformerModel(nn.Module):
     def __init__(self,
                  input_size: int,
                  d_model: int,

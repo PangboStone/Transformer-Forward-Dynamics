@@ -11,7 +11,7 @@ import math
 import time
 from dataset import RobotDynamicsDataset, load_all_trajectories_from_file
 from model_transformer import TransformerModel
-from model_transformer_LinformerAttention import LineformerTransformerModel
+from model_transformer_LinformerAttention import LinformerTransformerModel
 DATA_FILE_PATH = 'venv/ForwardDynamics/KukaDirectDynamics.mat'
 
 # 数据与模型超参数
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     # --- 模型训练 ---
     log_print("\n[2/5] 正在初始化和训练模型...")
     # model = TransformerModel(INPUT_SIZE, D_MODEL, N_HEAD, NUM_ENCODER_LAYERS, DIM_FEEDFORWARD, OUTPUT_SIZE, DROPOUT).to(DEVICE)
-    model = LineformerTransformerModel(
+    model = LinformerTransformerModel(
         input_size=INPUT_SIZE,
         d_model=D_MODEL,
         nhead=N_HEAD,

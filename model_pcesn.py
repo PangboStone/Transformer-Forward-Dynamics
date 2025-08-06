@@ -116,7 +116,7 @@ class PCESNpp:
         r_state = self._update_reservoir_state(u_t_gpu)
 
         # 2. 构造用于线性回归的组合状态向量 c_t
-        c_t = cp.vstack((r_state, np.ones((1, 1))))
+        c_t = cp.vstack((r_state, cp.ones((1, 1))))
 
         # 3. 计算预测误差
         prediction = cp.dot(self.W_out, c_t)

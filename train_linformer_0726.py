@@ -43,6 +43,7 @@ def predict_single_step(model, data_loader, device):
             prediction = model(sequences)
             predictions.append(prediction.cpu().numpy())
     return np.concatenate(predictions, axis=0)
+
 def predict_full_trajectory(model, initial_sequence, true_torques_unscaled, input_scaler, output_scaler, device):
     model.eval()
     predictions_unscaled = []

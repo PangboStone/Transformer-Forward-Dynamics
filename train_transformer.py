@@ -220,4 +220,4 @@ if __name__ == '__main__':
     log_file.close()
     print(f"\n完整评估完成！日志已保存至: {log_file_path}")
 
-#  ！！！查看日志用命令tensorboard --logdir "D:\TransformerForwardDynamic\venv\runs"
+#  ！！！查看日志用命令tensorboard --logdir "D:\TransformerForwardDynamic\venv\runs + 对应的日志"

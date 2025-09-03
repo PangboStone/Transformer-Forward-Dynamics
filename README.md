@@ -129,6 +129,14 @@ The plot below shows the Linformer's superior performance on the KUKA dataset. I
 ## 📰Key References
 
 [1] Alkhodary, A., & Gur, B. (2024). Learning Soft Robotic Arm Control: A Data-Driven Approach with Forward Dynamics Transformer and Reinforcement Learning. *EAI/Springer Innovations in Communication and Computing*.
-[23] Polydoros, A. S., & Nalpantidis, L. (2016). A Reservoir Computing Approach for Learning Forward Dynamics of Industrial Manipulators. *2016 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)*, 612-618.
-[22] Pizzuto, G. (2020). *Real robot manipulation datasets for learning dynamics*. Retrieved from https://gabriellapizzuto.github.io/Real-Robot-Manipulation-Datasets-For-Learning-Dynamics/
+
+[2] Polydoros, A. S., & Nalpantidis, L. (2016). A Reservoir Computing Approach for Learning Forward Dynamics of Industrial Manipulators. *2016 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)*, 612-618.
+
+[3] Pizzuto, G. (2020). *Real robot manipulation datasets for learning dynamics*. Retrieved from https://gabriellapizzuto.github.io/Real-Robot-Manipulation-Datasets-For-Learning-Dynamics/
+
+[4] **Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2017).** "Attention Is All You Need." In *Advances in Neural Information Processing Systems 30 (NIPS 2017)*.
+
+[5] **Wang, S., Li, B. Z., Khabsa, M., Fang, H., & Ma, H. (2020).** "Linformer: Self-Attention with Linear Complexity." In *Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP)*.
+
+[6] **Jaeger, H. (2001).** "The 'Echo State' Approach to Analysing and Training Recurrent Neural Networks." *Technical Report 148, GMD German National Research Center for Information Technology*.
 

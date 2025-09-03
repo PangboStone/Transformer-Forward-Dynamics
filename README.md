@@ -1,4 +1,4 @@
-# Transformer-Based and Physics-Informed Models for Manipulator Forward Dynamics
+# Industrial Manipulator Forward Dynamics Modelling with Transformer-Based and Physics-Informed ESN Models
 
 This repository contains the complete implementation for a research project focused on learning the forward dynamics of industrial manipulators. It provides a replication of the PC-ESN++ baseline model and introduces several advanced alternatives, including a novel Transformer-based framework (TFD-Net), an efficient Linformer variant, and a Physics-Informed PC-ESN.
 
@@ -34,7 +34,7 @@ The repository contains a flat structure of scripts for data handling, model def
 #### A Note on File Naming
 Some script names include numeric suffixes (e.g., `_0726`, `_0807`). These suffixes represent the date on which that version of the script was developed (e.g., July 26th, August 7th). They mark different stages of the project's development. As a rule, **later versions are more complete and refined.** For instance, `train_linformer_0807.py` is the final and most comprehensive training script.
 
-## 🤖 Models Implemented
+## 🦾 Models Implemented
 
 This project compares four primary architectures:
 
@@ -63,7 +63,7 @@ This project compares four primary architectures:
 4.  **Download Datasets:**
     Download the benchmark datasets (`.mat` files) from the **[Real Robot Manipulation Datasets For Learning Dynamics](https://gabriellapizzuto.github.io/Real-Robot-Manipulation-Datasets-For-Learning-Dynamics/)** page. Create a `venv/ForwardDynamics/` directory at the project root and place the files inside it.
 
-## 🚀 How to Use
+## 🛠 How to Use
 
 This project's experiments are designed to be run directly from the scripts in the root directory.
 
@@ -120,8 +120,15 @@ The Transformer models are nearly **10x faster** at inference time due to their 
 | **TFD-Net** | 0.1115 | 2112.16 |
 | **Linformer** | **0.0985** | **1957.93** |
 
-### Visual Result Example
+### 📈Prediction Result Visual Example
 
 The plot below shows the Linformer's superior performance on the KUKA dataset. Its predictions (green and red dotted lines) closely follow the ground truth (blue line), whereas the ESN models typically show significant drift.
 
 ![Prediction and Ground-truth Trajectories Comparison](./assets/Prediction%20and%20Ground-truth%20Trajectories%20Comparison.png)
+
+## 📰Key References
+
+[1] Alkhodary, A., & Gur, B. (2024). Learning Soft Robotic Arm Control: A Data-Driven Approach with Forward Dynamics Transformer and Reinforcement Learning. *EAI/Springer Innovations in Communication and Computing*.
+[23] Polydoros, A. S., & Nalpantidis, L. (2016). A Reservoir Computing Approach for Learning Forward Dynamics of Industrial Manipulators. *2016 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)*, 612-618.
+[22] Pizzuto, G. (2020). *Real robot manipulation datasets for learning dynamics*. Retrieved from https://gabriellapizzuto.github.io/Real-Robot-Manipulation-Datasets-For-Learning-Dynamics/
+

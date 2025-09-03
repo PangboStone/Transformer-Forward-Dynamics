@@ -124,4 +124,4 @@ The Transformer models are nearly **10x faster** at inference time due to their 
 
 The plot below shows the Linformer's superior performance on the KUKA dataset. Its predictions (green and red dotted lines) closely follow the ground truth (blue line), whereas the ESN models typically show significant drift.
 
-![Linformer and PI-PCESN Predictions on KUKA Dataset](./assets/Prediction and Ground-truth Trajectories Comparison.png)
+![Prediction and Ground-truth Trajectories Comparison](./assets/Prediction%20and%20Ground-truth%20Trajectories%20Comparison.png)

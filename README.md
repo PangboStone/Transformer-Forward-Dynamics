@@ -45,22 +45,12 @@ This project compares four primary architectures:
 
 ## ⚙️ Installation
 
-1.  **Clone the Repository:**
-    ```bash
-    git clone [https://github.com/PangboStone/Transformer-Base-Manipulator-Forward-Dynamics.git](https://github.com/PangboStone/Transformer-Base-Manipulator-Forward-Dynamics.git)
-    cd Transformer-Base-Manipulator-Forward-Dynamics
-    ```
-2.  **Create a Virtual Environment (Recommended):**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
-3.  **Install Dependencies:**
+**Install Dependencies:**
     The project requires PyTorch with CUDA support for best performance. Please install it first by following the [official PyTorch instructions](https://pytorch.org/get-started/locally/). Then, install the remaining packages.
     ```bash
     pip install -r requirements.txt
     ```
-4.  **Download Datasets:**
+**Download Datasets:**
     Download the benchmark datasets (`.mat` files) from the **[Real Robot Manipulation Datasets For Learning Dynamics](https://gabriellapizzuto.github.io/Real-Robot-Manipulation-Datasets-For-Learning-Dynamics/)** page. Create a `venv/ForwardDynamics/` directory at the project root and place the files inside it.
 
 ## 🛠 How to Use
@@ -81,7 +71,7 @@ The most comprehensive training script is `train_linformer_0807.py`, which runs 
     * Set a correction interval for autonomous prediction (or disable it).
     * Choose whether to save and/or display plots.
 
-The script will handle data loading, training, evaluation, and saving all results (logs, plots, and TensorBoard files) to the `results/` directory and model checkpoints to `saved_models/`.
+The script will handle data loading, training, evaluation, and saving all results (logs, plots, and TensorBoard files) to the `results/` directory and optional model checkpoints to `saved_models/`.
 
 ### Visualizing a Trained Model's Predictions
 

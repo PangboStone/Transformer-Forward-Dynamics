@@ -1,6 +1,6 @@
 # Development Log
 
-This appendix provides a detailed week-by-week log of the software engineering and experimental work carried out during the project. The log complements the research diary and concludes technical implementation effort.
+This document appendix provides a detailed week-by-week log of the development process and experimental work carried out during the project. The log complements the research diary and concludes technical implementation effort.
 In total, approximately 390 hours were devoted over 10 weeks, resulting in over 6000 lines of Python code including data pipelines, model implementations, training routines, and evaluation scripts.
 
 ## Week 1 (June 22 – June 28): Project Foundation and Data Pipeline

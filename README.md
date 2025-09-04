@@ -4,6 +4,8 @@ This repository contains the complete implementation for a research project focu
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
+![DH Parameters Diagram](./assets/fig/fig2.1%20A%20diagram%20illustrating%20the%20DH%20parameters.png)
+
 ## 🎯 Project Goal
 
 This project primarily aims to develop and evaluate data-driven models for predicting the forward dynamics of robotic manipulators, including:
